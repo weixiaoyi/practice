@@ -10,14 +10,17 @@ class SvgChart extends Component {
   render() {
     return (
       <div className={styles.container}>
-        <div className={styles.shapesContainer}>
-          <Shapes />
-        </div>
-        <div className={styles.drawAreaContainer}>
-          <DrawArea />
-        </div>
-        <div className={styles.featuresContainer}>
-          <Features />
+        <div className={styles.utils}>utils</div>
+        <div className={styles.works}>
+          <div className={styles.shapesContainer}>
+            <Shapes />
+          </div>
+          <div className={styles.drawAreaContainer}>
+            <DrawArea />
+          </div>
+          <div className={styles.featuresContainer}>
+            <Features />
+          </div>
         </div>
       </div>
     );

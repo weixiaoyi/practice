@@ -1,13 +1,26 @@
-.container{
+.container {
+  height: 100%;
   display: flex;
-  .shapesContainer{
-    border:1px solid red;
+  flex-direction: column;
+  .utils {
+    height: 40px;
   }
-  .drawAreaContainer{
+  .works {
     flex-grow: 1;
-    border:1px solid green;
+    display: flex;
+    > div {
+      align-items: stretch;
+    }
   }
-  .featuresContainer{
-    border:1px solid blue;
+
+  .shapesContainer {
+    border: 1px solid red;
+  }
+  .drawAreaContainer {
+    flex-grow: 1;
+    border: 1px solid green;
+  }
+  .featuresContainer {
+    border: 1px solid blue;
   }
 }
