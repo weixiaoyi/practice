@@ -2,13 +2,23 @@ import React, { Component } from "react";
 import { Inject } from "../../utils";
 
 @Inject(({ homeStore: model }) => ({
-  model
+  model,
 }))
 class Home extends Component {
-  render(){
-    console.log(this.props.model,'----------thius.props')
-    return <div>hahhaddddddddddddd</div>
+  componentDidMount() {
+    const {
+      model: { dispatch },
+    } = this.props;
+    for (let i = 0; i < 100; i++) {
+      dispatch({
+        type: "apiTest",
+      });
+    }
+  }
+
+  render() {
+    return <div>hahhaddddddddddddd</div>;
   }
 }
 
-export default Home
+export default Home;
