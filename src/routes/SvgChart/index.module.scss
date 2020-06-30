@@ -1,0 +1,13 @@
+.container{
+  display: flex;
+  .shapesContainer{
+    border:1px solid red;
+  }
+  .drawAreaContainer{
+    flex-grow: 1;
+    border:1px solid green;
+  }
+  .featuresContainer{
+    border:1px solid blue;
+  }
+}
