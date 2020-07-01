@@ -5,8 +5,6 @@ import DrawArea from "./drawArea";
 import Features from "./features";
 
 class SvgChart extends Component {
-  componentDidMount() {}
-
   render() {
     return (
       <div className={styles.container}>

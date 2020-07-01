@@ -7,7 +7,7 @@ import App from './routes/App/index';
 import * as serviceWorker from './serviceWorker';
 import { default as store } from "./store";
 
-// configure({ enforceActions: "always" });
+configure({ enforceActions: "always" });
 
 ReactDOM.render(
   <Provider {...store}>
