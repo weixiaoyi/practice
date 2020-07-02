@@ -40,7 +40,8 @@ export default class Base {
 
   generateEdgeCentreVertex = () => {};
 
-  update = () => {
+  update = (key, value) => {
+    this[key] = value;
     this.init();
     return { ...this };
   };

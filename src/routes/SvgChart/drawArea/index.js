@@ -15,13 +15,14 @@ function SquareShape(props) {
   return (
     <g>
       <rect
+        draggable="true"
         cursor="move"
-        onMouseDown={restPoint.onSelect}
         width={width}
         height={height}
         style={style}
         x={position.x}
-        y={position.x}
+        y={position.y}
+        onMouseDown={restPoint.onMouseDown}
       />
       {selectedShapeId === id && (
         <g>
@@ -40,7 +41,7 @@ function SquareShape(props) {
             const [width, height] = [8, 8];
             return (
               <rect
-                key={`${pointX}${pointY}`}
+                key={`${pointX}_${pointY}`}
                 x={pointX - width / 2}
                 y={pointY - width / 2}
                 width={width}
@@ -60,8 +61,8 @@ function SquareShape(props) {
 
 function DrawArea() {
   const [store, dispatch] = useStore();
-  const [mouseEnter, setMouseEnter] = useState(false);
-  const [select, setSelect] = useState([]);
+  const [moveStartClientPosition, setMoveStartClientPosition] = useState([]);
+  const [moveStartShapePosition, setMoveStartShapePosition] = useState([]);
 
   const { shapes, selectedShapeId } = store;
 
@@ -72,8 +73,8 @@ function DrawArea() {
         height: 100,
       },
       position: {
-        x: 10,
-        y: 10,
+        x: 100,
+        y: 100,
       },
       style: {
         fill: "red",
@@ -93,20 +94,44 @@ function DrawArea() {
       version="1.1"
       width="100%"
       height="100%"
-      onMouseDown={() =>
+      onMouseDown={() => {
         dispatch({
           type: "selectShape",
           payload: {
             id: "",
           },
-        })
-      }
+        });
+      }}
+      onMouseUp={() => {
+        setMoveStartClientPosition([]);
+        setMoveStartShapePosition([]);
+      }}
+      onMouseMove={(e) => {
+        if (moveStartClientPosition && moveStartClientPosition.length) {
+          const { clientX, clientY } = e.nativeEvent;
+          const distX = clientX - moveStartClientPosition[0];
+          const distY = clientY - moveStartClientPosition[1];
+          dispatch({
+            type: "editShapes",
+            payload: {
+              id: selectedShapeId,
+              position: {
+                x: moveStartShapePosition[0] + distX,
+                y: moveStartShapePosition[1] + distY,
+              },
+            },
+          });
+        }
+      }}
     >
       {shapes.map((shape) => {
         const props = {
           ...shape,
           key: shape.id,
-          onSelect: (e) => {
+          onMouseDown: (e) => {
+            const { clientX, clientY } = e.nativeEvent;
+            setMoveStartShapePosition([shape.position.x, shape.position.y]);
+            setMoveStartClientPosition([clientX, clientY]);
             dispatch({
               type: "selectShape",
               payload: {
