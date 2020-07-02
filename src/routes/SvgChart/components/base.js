@@ -2,26 +2,15 @@ import { v4 as uuidv4 } from "uuid";
 
 export default class Base {
   constructor(options = {}) {
-    const { type, width, height, position, style } = options;
-    this.uuid = uuidv4();
+    const { type, size, position, style } = options;
+    this.id = uuidv4();
     this.type = type;
-    this.width = width;
-    this.height = height;
+    this.size = size;
     this.position = position;
     this.style = style;
-    this.zoomControlVertex = {
-      width: 8,
-      height: 8,
-      coordinates: [],
-    }; // 控制点
-    this.rotateControlVertex = {
-      radius: 2,
-      coordinates: [],
-    }; // 旋转点
-    this.edgeCentreVertex = {
-      radius: 2,
-      coordinates: [],
-    }; // 边缘中心点
+    this.zoomControlVertex = []; // 控制点
+    this.rotateControlVertex = []; // 旋转点
+    this.edgeCentreVertex = []; // 边缘中心点
     this.init();
   }
 
@@ -31,15 +20,15 @@ export default class Base {
 
   _helperGetAbsoluteCoordinate = (coordinate = []) => {
     const position = this.position;
-    return coordinate.map((item) => [
-      position.x + item[0],
-      position.y + item[1],
+    return coordinate.map(([pointX, pointY]) => [
+      position.x + pointX,
+      position.y + pointY,
     ]);
   };
 
-  generateZoomControlVertex = (pointNum = 4) => {
-    const { width, height } = this;
-    this.zoomControlVertex.coordinates = this._helperGetAbsoluteCoordinate([
+  generateZoomControlVertex = () => {
+    const { width, height } = this.size;
+    this.zoomControlVertex = this._helperGetAbsoluteCoordinate([
       [0, 0],
       [width, 0],
       [width, height],
