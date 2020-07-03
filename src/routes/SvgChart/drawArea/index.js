@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Square } from "../components";
 import useStore from "../store";
-import styles from "./index.module.scss";
 
 function SquareShape(props) {
   const {
@@ -10,6 +9,8 @@ function SquareShape(props) {
     style,
     position,
     selectedShapeId,
+    hoveredShapeId,
+    isMoving,
     ...restPoint
   } = props;
   return (
@@ -23,6 +24,8 @@ function SquareShape(props) {
         x={position.x}
         y={position.y}
         onMouseDown={restPoint.onMouseDown}
+        onMouseEnter={restPoint.onMouseEnter}
+        onMouseLeave={restPoint.onMouseLeave}
       />
       {selectedShapeId === id && (
         <g>
@@ -55,6 +58,26 @@ function SquareShape(props) {
           })}
         </g>
       )}
+
+      {(isMoving ? selectedShapeId === id : hoveredShapeId === id) && (
+        <g>
+          {restPoint.edgeCentreVertex.map(([pointX, pointY]) => {
+            return (
+              <circle
+                pointerEvents="none"
+                key={`${pointX}_${pointY}`}
+                cx={pointX}
+                cy={pointY}
+                r={4}
+                style={{
+                  stroke: "black",
+                  fill: "white",
+                }}
+              />
+            );
+          })}
+        </g>
+      )}
     </g>
   );
 }
@@ -64,7 +87,7 @@ function DrawArea() {
   const [moveStartClientPosition, setMoveStartClientPosition] = useState([]);
   const [moveStartShapePosition, setMoveStartShapePosition] = useState([]);
 
-  const { shapes, selectedShapeId } = store;
+  const { shapes, selectedShapeId, hoveredShapeId } = store;
 
   useEffect(() => {
     const square = new Square({
@@ -80,13 +103,35 @@ function DrawArea() {
         fill: "red",
       },
     });
+
+    const square2 = new Square({
+      size: {
+        width: 100,
+        height: 100,
+      },
+      position: {
+        x: 300,
+        y: 300,
+      },
+      style: {
+        fill: "green",
+      },
+    });
     dispatch({
       type: "addShape",
       payload: {
         shape: square,
       },
     });
+    dispatch({
+      type: "addShape",
+      payload: {
+        shape: square2,
+      },
+    });
   }, [0]);
+
+  const isMoving = moveStartClientPosition && moveStartClientPosition.length;
 
   return (
     <svg
@@ -107,7 +152,7 @@ function DrawArea() {
         setMoveStartShapePosition([]);
       }}
       onMouseMove={(e) => {
-        if (moveStartClientPosition && moveStartClientPosition.length) {
+        if (isMoving) {
           const { clientX, clientY } = e.nativeEvent;
           const distX = clientX - moveStartClientPosition[0];
           const distY = clientY - moveStartClientPosition[1];
@@ -128,6 +173,9 @@ function DrawArea() {
         const props = {
           ...shape,
           key: shape.id,
+          selectedShapeId,
+          hoveredShapeId,
+          isMoving,
           onMouseDown: (e) => {
             const { clientX, clientY } = e.nativeEvent;
             setMoveStartShapePosition([shape.position.x, shape.position.y]);
@@ -140,7 +188,24 @@ function DrawArea() {
             });
             e.stopPropagation();
           },
-          selectedShapeId,
+          onMouseEnter: (e) => {
+            dispatch({
+              type: "hoverShape",
+              payload: {
+                id: shape.id,
+              },
+            });
+            e.stopPropagation();
+          },
+          onMouseLeave: (e) => {
+            dispatch({
+              type: "hoverShape",
+              payload: {
+                id: "",
+              },
+            });
+            e.stopPropagation();
+          },
         };
         return {
           square: <SquareShape {...props} />,

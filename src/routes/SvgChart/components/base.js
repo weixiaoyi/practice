@@ -11,11 +11,11 @@ export default class Base {
     this.zoomControlVertex = []; // 控制点
     this.rotateControlVertex = []; // 旋转点
     this.edgeCentreVertex = []; // 边缘中心点
-    this.init();
   }
 
   init = () => {
     this.generateZoomControlVertex();
+    this.generateEdgeCentreVertex();
   };
 
   _helperGetAbsoluteCoordinate = (coordinate = []) => {
@@ -38,11 +38,12 @@ export default class Base {
 
   generateRotateControlVertex = () => {};
 
-  generateEdgeCentreVertex = () => {};
+  generateEdgeCentreVertex = () =>
+    throw new Error("generateEdgeCentreVertex method must to be implement!");
 
   update = (key, value) => {
     this[key] = value;
     this.init();
-    return { ...this };
+    return this;
   };
 }

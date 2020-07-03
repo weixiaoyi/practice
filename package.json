@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.10.3",
+    "@babel/plugin-proposal-throw-expressions": "^7.10.4",
     "customize-cra": "^1.0.0",
     "node-sass": "^4.14.1",
     "prettier": "^2.0.5",
