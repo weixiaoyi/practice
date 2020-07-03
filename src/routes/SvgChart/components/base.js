@@ -41,8 +41,13 @@ export default class Base {
   generateEdgeCentreVertex = () =>
     throw new Error("generateEdgeCentreVertex method must to be implement!");
 
-  update = (key, value) => {
-    this[key] = value;
+  update = (keys, values) => {
+    if (typeof keys === "object") {
+      Object.entries(keys).forEach(([key, value]) => (this[key] = value));
+    } else {
+      this[keys] = values;
+    }
+
     this.init();
     return this;
   };

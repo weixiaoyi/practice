@@ -1,9 +1,9 @@
 import React, { useReducer, useContext } from "react";
+import { zoomControlVertexConfig } from "../configs";
 
 const StoreContext = React.createContext({
   shapes: [],
   selectedShapeId: "",
-  hoveredShapeId: "",
 });
 
 export const reducer = (state, action) => {
@@ -11,25 +11,83 @@ export const reducer = (state, action) => {
   switch (action.type) {
     case "selectShape":
       return { ...state, selectedShapeId: payload.id };
-    case "hoverShape":
-      return { ...state, hoveredShapeId: payload.id };
     case "addShape":
       const { shape } = payload;
       return { ...state, shapes: state.shapes.concat([shape]) };
-    case "editShapes": {
-      const { id, ...rest } = payload;
-
+    case "moveShape": {
+      const { id, distX, distY } = payload;
       return {
         ...state,
         shapes: state.shapes.map((item) => {
-          if (item.id === id) {
-            if (rest.position) {
-              item.position = rest.position;
-              return item.update("position", rest.position);
-            }
-            return item;
+          if (item.id !== id) return item;
+          const {
+            position: { x, y },
+          } = item;
+          return item.update("position", {
+            x: x + distX,
+            y: y + distY,
+          });
+        }),
+      };
+    }
+    case "zoomShape": {
+      const { id, direction, distX, distY } = payload;
+      return {
+        ...state,
+        shapes: state.shapes.map((item) => {
+          if (item.id !== id) return item;
+          let position;
+          let size;
+          const {
+            position: { x, y },
+            size: { width, height },
+          } = item;
+          if (direction === "se") {
+            position = {
+              x,
+              y,
+            };
+            size = {
+              width: width + distX,
+              height: height + distY,
+            };
+          } else if (direction === "ne") {
+            position = {
+              x,
+              y: y + distY,
+            };
+            size = {
+              width: width + distX,
+              height: height - distY,
+            };
+          } else if (direction === "sw") {
+            position = {
+              x: x + distX,
+              y,
+            };
+            size = {
+              width: width - distX,
+              height: height + distY,
+            };
+          } else if (direction === "nw") {
+            position = {
+              x: x + distX,
+              y: y + distY,
+            };
+            size = {
+              width: width - distX,
+              height: height - distY,
+            };
           }
-          return item;
+          if (
+            size.width <= zoomControlVertexConfig.width ||
+            size.height <= zoomControlVertexConfig.height
+          )
+            return item;
+          return item.update({
+            position,
+            size,
+          });
         }),
       };
     }
