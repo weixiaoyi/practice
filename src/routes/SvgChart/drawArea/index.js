@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Square } from "../components";
+import { Transform } from "./components";
 import useStore from "../store";
 import { zoomControlVertexConfig } from "../configs";
+import { stopPropagation } from "../utils";
 
 function SquareShape(props) {
   const {
     id,
+    container,
     size: { width, height },
     style,
     position,
@@ -16,8 +19,9 @@ function SquareShape(props) {
   } = props;
   return (
     <g>
-      <rect
-        draggable="true"
+      <Transform
+        Ele="rect"
+        container={container}
         cursor="move"
         width={width}
         height={height}
@@ -27,6 +31,9 @@ function SquareShape(props) {
         onMouseDown={restPoint.shapeEventHandler.onMouseDown}
         onMouseEnter={restPoint.shapeEventHandler.onMouseEnter}
         onMouseLeave={restPoint.shapeEventHandler.onMouseLeave}
+        moveable={{
+          onMouseMove: restPoint.shapeEventHandler.onMouseMove,
+        }}
       />
       {selectedShapeId === id && (
         <g>
@@ -42,12 +49,17 @@ function SquareShape(props) {
             }}
           />
           {restPoint.zoomControlVertex.map(([pointX, pointY], index) => {
-            const [width, height] = [zoomControlVertexConfig.width, zoomControlVertexConfig.height];
+            const [width, height] = [
+              zoomControlVertexConfig.width,
+              zoomControlVertexConfig.height,
+            ];
             const directions = ["nw", "ne", "se", "sw"];
             return (
-              <rect
+              <Transform
+                Ele="rect"
+                container={container}
                 cursor={`${directions[index]}-resize`}
-                key={`${pointX}_${pointY}`}
+                key={index}
                 x={pointX - width / 2}
                 y={pointY - width / 2}
                 width={width}
@@ -56,12 +68,19 @@ function SquareShape(props) {
                   stroke: "black",
                   fill: "white",
                 }}
-                onMouseDown={(e) =>
-                  restPoint.zoomControlVertexEventHandler.onMouseDown(
-                    e,
-                    directions[index]
-                  )
+                onMouseDown={
+                  restPoint.zoomControlVertexEventHandler.onMouseDown
                 }
+                moveable={{
+                  onMouseMove: (e, data) => {
+                    restPoint.zoomControlVertexEventHandler.onMouseMove(
+                      e,
+                      data,
+                      directions[index]
+                    );
+                    stopPropagation(e)
+                  },
+                }}
               />
             );
           })}
@@ -98,14 +117,8 @@ function SquareShape(props) {
 function DrawArea() {
   const [store, dispatch] = useStore();
   const [dragTargetElementType, setDragTargetElementType] = useState("");
-  const [moveCurrentClientPosition, setMoveCurrentClientPosition] = useState(
-    []
-  );
   const [hoveredShapeId, setHoveredShapeId] = useState("");
-  const [
-    dragZoomControlVertexDirection,
-    setDragZoomControlVertexDirection,
-  ] = useState("");
+  const container = useRef(null);
 
   const { shapes, selectedShapeId } = store;
 
@@ -149,52 +162,28 @@ function DrawArea() {
         shape: square2,
       },
     });
-  }, [0]);
+  }, []);
 
   return (
     <svg
+      ref={container}
+      id="jjj_"
       xmlns="http://www.w3.org/2000/svg"
       version="1.1"
       width="100%"
       height="100%"
-      onMouseDown={() => {
+      onMouseUp={(e) => {
+        setDragTargetElementType("");
+        stopPropagation(e)
+      }}
+      onMouseDown={(e) => {
         dispatch({
           type: "selectShape",
           payload: {
             id: "",
           },
         });
-      }}
-      onMouseUp={() => {
-        setDragZoomControlVertexDirection("");
-        setDragTargetElementType("");
-        setMoveCurrentClientPosition([]);
-      }}
-      onMouseMove={(e) => {
-        const { clientX, clientY } = e.nativeEvent;
-        const distX = clientX - moveCurrentClientPosition[0];
-        const distY = clientY - moveCurrentClientPosition[1];
-        if (dragTargetElementType === "shape") {
-          dispatch({
-            type: "moveShape",
-            payload: {
-              id: selectedShapeId,
-              distX,
-              distY,
-            },
-          });
-        } else if (dragTargetElementType === "zoomControlVertex") {
-          dispatch({
-            type: "zoomShape",
-            payload: {
-              id: selectedShapeId,
-              direction: dragZoomControlVertexDirection,
-              distX,
-              distY,
-            },
-          });
-        }
-        setMoveCurrentClientPosition([clientX, clientY]);
+        stopPropagation(e)
       }}
     >
       {shapes.map((shape) => {
@@ -206,38 +195,58 @@ function DrawArea() {
           dragTargetElementType,
           shapeEventHandler: {
             onMouseDown: (e) => {
-              const { clientX, clientY } = e.nativeEvent;
               setDragTargetElementType("shape");
-              setMoveCurrentClientPosition([clientX, clientY]);
               dispatch({
                 type: "selectShape",
                 payload: {
                   id: shape.id,
                 },
               });
-              e.stopPropagation();
+              stopPropagation(e)
+            },
+            onMouseMove: (e, data) => {
+              const { distX, distY } = data;
+              dispatch({
+                type: "moveShape",
+                payload: {
+                  id: shape.id,
+                  distX,
+                  distY,
+                },
+              });
+              stopPropagation(e)
             },
             onMouseEnter: (e) => {
               setHoveredShapeId(shape.id);
-              e.stopPropagation();
+              stopPropagation(e)
             },
             onMouseLeave: (e) => {
               setHoveredShapeId("");
-              e.stopPropagation();
+              stopPropagation(e)
             },
           },
           zoomControlVertexEventHandler: {
-            onMouseDown: (e, dragZoomControlVertexDirection) => {
-              const { clientX, clientY } = e.nativeEvent;
+            onMouseDown: (e) => {
               setDragTargetElementType("zoomControlVertex");
-              setMoveCurrentClientPosition([clientX, clientY]);
-              setDragZoomControlVertexDirection(dragZoomControlVertexDirection);
-              e.stopPropagation();
+              stopPropagation(e)
+            },
+            onMouseMove: (e, data, direction) => {
+              const { distX, distY } = data;
+              dispatch({
+                type: "zoomShape",
+                payload: {
+                  id: shape.id,
+                  direction,
+                  distX,
+                  distY,
+                },
+              });
+              stopPropagation(e)
             },
           },
         };
         return {
-          square: <SquareShape {...props} />,
+          square: <SquareShape {...props} container={container.current} />,
         }[shape.type];
       })}
     </svg>

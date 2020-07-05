@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 
 export default class Base {
   constructor(options = {}) {
-    const { type, size, position, style } = options;
+    const { type, W2D, size, position, style } = options;
     this.id = uuidv4();
     this.type = type;
     this.size = size;
@@ -11,6 +11,7 @@ export default class Base {
     this.zoomControlVertex = []; // 控制点
     this.rotateControlVertex = []; // 旋转点
     this.edgeCentreVertex = []; // 边缘中心点
+    this.W2D = W2D;
   }
 
   init = () => {

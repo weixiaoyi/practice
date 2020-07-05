@@ -11,9 +11,10 @@ export const reducer = (state, action) => {
   switch (action.type) {
     case "selectShape":
       return { ...state, selectedShapeId: payload.id };
-    case "addShape":
+    case "addShape": {
       const { shape } = payload;
       return { ...state, shapes: state.shapes.concat([shape]) };
+    }
     case "moveShape": {
       const { id, distX, distY } = payload;
       return {
