@@ -209,7 +209,7 @@ function DrawArea() {
               dispatch({
                 type: "moveShape",
                 payload: {
-                  id: shape.id,
+                  id: selectedShapeId,
                   distX,
                   distY,
                 },
@@ -235,7 +235,7 @@ function DrawArea() {
               dispatch({
                 type: "zoomShape",
                 payload: {
-                  id: shape.id,
+                  id: selectedShapeId,
                   direction,
                   distX,
                   distY,
