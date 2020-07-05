@@ -123,45 +123,27 @@ function DrawArea() {
   const { shapes, selectedShapeId } = store;
 
   useEffect(() => {
-    const square = new Square({
-      size: {
-        width: 100,
-        height: 100,
-      },
-      position: {
-        x: 100,
-        y: 100,
-      },
-      style: {
-        fill: "red",
-      },
-    });
-
-    const square2 = new Square({
-      size: {
-        width: 100,
-        height: 100,
-      },
-      position: {
-        x: 300,
-        y: 300,
-      },
-      style: {
-        fill: "green",
-      },
-    });
-    dispatch({
-      type: "addShape",
-      payload: {
-        shape: square,
-      },
-    });
-    dispatch({
-      type: "addShape",
-      payload: {
-        shape: square2,
-      },
-    });
+    for (let i = 0; i < 100; i++) {
+      const square = new Square({
+        size: {
+          width: 50,
+          height: 50,
+        },
+        position: {
+          x: Math.random() * ( 600 -10 + 1 ) + 10,
+          y: Math.random() * ( 1000 -10 + 1 ) + 10,
+        },
+        style: {
+          fill: "red",
+        },
+      });
+      dispatch({
+        type: "addShape",
+        payload: {
+          shape: square,
+        },
+      });
+    }
   }, []);
 
   return (
